@@ -23,6 +23,65 @@ map<string, string> g_config;
 map<string, double> g_periodic_table;
 map<string, map<string, double>> g_percent;
 
+map<string, string> read_config(const char *f);
+map<string, map<string, double>> read_percent(const char *f);
+map<string, double> get_percent(map<string, map<string, double>> p, map<string, double> m, int mode);
+void show_percent(map<string, double> m);
+void percent_to_formula(map<string, double> perc);
+void parse_command(string s);
+double CA(map<string, double> m);
+double K(map<string, double> percent);
+
+int main(int argc, char *argv[]) {
+    g_config = read_config("./formula.conf");
+    g_periodic_table  = read_periodic_table(g_config["periodic-table-file"].c_str());
+    g_percent = read_percent(g_config["percent-file"].c_str());
+
+    int c;
+    while ((c = getopt(argc, argv, "bglp")) != EOF) {
+        switch (c) {
+            case 'b':
+                g_mode = MODE_BASE;
+                break;
+            case 'g':
+                g_mode = MODE_GLAZE;
+                break;
+            case 'l':
+                g_loi = 1;
+                break;
+            case 'p':
+                g_ptable = 1;
+            default:
+                break;
+        }
+    }
+
+    if (g_ptable == 1) {
+        // 计算分子的摩尔质量
+        for (int i = 1; i < argc; ++i) {
+            if (argv[i][0] != '-') {
+                double n = ptable(argv[i], g_periodic_table);
+                printf("%s %.3lf\n", argv[i], n);
+            }
+        }
+        return 0;
+    }
+
+    if (argc > 1) {
+        string s;
+        for (int i = 1; i < argc; ++i) {
+            if (argv[i][0] == '-')
+                continue;
+            s = s + " " + argv[i];
+        }
+        s += " 100";
+        parse_command(s);
+        return 0;
+    }
+
+    return 0;
+}
+
 map<string, map<string, double>> read_percent(const char *f) {
     map<string, map<string, double>> percent;
     vector<vector<string>> form = read_form(f);
@@ -36,18 +95,6 @@ map<string, map<string, double>> read_percent(const char *f) {
         percent[form[i][0]] = m;
     }
     return percent;
-}
-
-void check_percent(map<string, map<string, double>> &m) {
-    for (auto x : m) {
-        printf("%s ", x.first.c_str());
-        double t = 0.0;
-        for (auto y : x.second) {
-            printf("%s %.2lf ", y.first.c_str(), y.second);
-            t += y.second;
-        }
-        printf("总量 %.2lf\n", t);
-    }
 }
 
 map<string, double> get_percent(map<string, map<string, double>> p, map<string, double> m, int mode) {
@@ -241,21 +288,6 @@ void parse_command(string s) {
     percent_to_formula(percent);
 }
 
-void test() {
-    vector<string> v{"钾长石 ", " 石英 ", " 高岭土 ", " 滑石 "};
-    string s;
-    int n = 10;
-    for (int i = 0; i < n; i++)
-        for (int j = 0; j < n - i; ++j) 
-            for (int k = 0; k < n - i - j; ++k) {
-                    int l = n - i - j - k;
-                    cout << i << " " << j << " " << k << " " << l << endl;
-                    s = v[0] + to_string(i) + v[1] + to_string(j) + v[2] + to_string(k) + v[3] + to_string(l);
-                    cout << s << endl;
-                    parse_command(s);
-            }
-}
-
 map<string, string> read_config(const char *f) {
     map<string, string> m;
     m["periodic-table-file"]  = "../data/periodic_table.txt";
@@ -271,52 +303,4 @@ map<string, string> read_config(const char *f) {
     return m;
 }
 
-int main(int argc, char *argv[]) {
-    g_config = read_config("./formula.conf");
-    g_periodic_table  = read_periodic_table(g_config["periodic-table-file"].c_str());
-    g_percent = read_percent(g_config["percent-file"].c_str());
 
-    int c;
-    while ((c = getopt(argc, argv, "bglp")) != EOF) {
-        switch (c) {
-            case 'b':
-                g_mode = MODE_BASE;
-                break;
-            case 'g':
-                g_mode = MODE_GLAZE;
-                break;
-            case 'l':
-                g_loi = 1;
-                break;
-            case 'p':
-                g_ptable = 1;
-            default:
-                break;
-        }
-    }
-
-    if (g_ptable == 1) {
-        // 计算分子的摩尔质量
-        for (int i = 1; i < argc; ++i) {
-            if (argv[i][0] != '-') {
-                double n = ptable(argv[i], g_periodic_table);
-                printf("%s %.3lf\n", argv[i], n);
-            }
-        }
-        return 0;
-    }
-
-    if (argc > 1) {
-        string s;
-        for (int i = 1; i < argc; ++i) {
-            if (argv[i][0] == '-')
-                continue;
-            s = s + " " + argv[i];
-        }
-        s += " 100";
-        parse_command(s);
-        return 0;
-    }
-
-    return 0;
-}
