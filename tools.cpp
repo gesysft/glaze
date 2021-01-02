@@ -108,7 +108,7 @@ map<string, double> mol_to_coef(map<string, double> v, int mode) {
     for (auto x : v)
         m[x.first] = x.second;
     double total;
-    if (mode == 1) {
+    if (mode == MODE_GLAZE) {
         total = m["Li2O"] + m["K2O"] + m["Na2O"] + m["CaO"] + m["MgO"] + m["ZnO"] + m["BaO"];
     } else if (mode == 0) {
         total = m["Al2O3"] + m["Fe2O3"];
@@ -180,7 +180,8 @@ double CA(map<string, double> m) {
     else if (ca >= 2.5)
         temp = " > 1450";
 
-    printf("        硬度系数 C.A = %lf 烧成温度 %s\n", ca, temp.c_str());
+    printf("\n烧成温度:\n");
+    printf("        %s\n", temp.c_str());
     return ca;
 }
 
@@ -242,7 +243,7 @@ void show_material_percent(map<string, map<string, double>> &material_percent, m
         }
     }
     
-    printf("原料化学成分:\n");
+    printf("\n原料化学成分:\n");
     printf("%-7s ", "");   
     for (auto x : name) {
         printf("%-7s ", x.c_str());
@@ -266,7 +267,7 @@ void show_material_percent(map<string, map<string, double>> &material_percent, m
 }
 
 void show_glaze_percent(vector<map<string, double>> v, vector<string> s) {
-    printf("釉料化学组成:\n");
+    printf("\n釉料化学组成:\n");
     printf("%-7s ", "");   
     for (auto x : v[0]) {
         printf("%-7s ", x.first.c_str());
@@ -291,7 +292,7 @@ void show_glaze_formula(map<string, double> v) {
     // 稳定剂 Al2O3
     // 乳浊剂 SnO2 TiO2 ZrO2
     // 着色剂 Fe2O3
-    printf("釉式:\n");
+    printf("\n釉式:\n");
     map<string, double> c;
     for (auto x : v) {
         c[x.first] = x.second;
