@@ -14,7 +14,7 @@
 
 using namespace std;
 
-// 烧失量
+// 是否计算烧失量
 int g_loi  = 0; 
 
 // 釉料还是泥料
@@ -26,7 +26,6 @@ map<string, map<string, double>> g_material_percent;
 
 map<string, string> read_config(const char *f);
 void analysis_glaze(string recipe);
-map<string, double> calc_glaze_percent(map<string, map<string, double>> p, map<string, double> m, int mode);
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -37,23 +36,6 @@ int main(int argc, char *argv[]) {
     g_config = read_config("./formula.conf");
     g_periodic_table  = read_periodic_table(g_config["periodic-table-file"].c_str());
     g_material_percent = read_material_percent(g_config["percent-file"].c_str());
-
-    int c;
-    while ((c = getopt(argc, argv, "bglp")) != EOF) {
-        switch (c) {
-            case 'b':
-                g_mode = MODE_BASE;
-                break;
-            case 'g':
-                g_mode = MODE_GLAZE;
-                break;
-            case 'l':
-                g_loi = 1;
-                break;
-            default:
-                break;
-        }
-    }
 
     string s;
     for (int i = 1; i < argc; ++i) {
@@ -81,7 +63,46 @@ map<string, string> read_config(const char *f) {
     return m;
 }
 
+map<string, double> calc_glaze_percent(map<string, map<string, double>> perc, 
+                                       map<string, double> table,
+                                       map<string, double> m) {
+    // 计算釉料的化学组成
+    map<string, double> ret;
+    for (auto x : m) {
+        if (table.find(x.first) != table.end()) {
+            if (g_loi == 0) {
+                ret[x.first] +=  x.second;
+            }
+            else {
+                ret[x.first] = ret[x.first] + (x.second / (100.0 - m["LOI"]) * 100);
+                printf("%lf %lf %lf\n", x.second, m["LOI"], x.second / (100.0 - m["LOI"]) * 100);
+            }
+            continue;
+        }
+
+        double n = ptable(x.first, table);
+        if (n != 0.0) {
+            table[x.first] = n;
+            ret[x.first] = ret[x.first] + (x.second / (100.0 - m["LOI"]) * 100);
+            continue;
+        }
+
+        if (perc.find(x.first) == perc.end())
+            cout << "        " << x.first << ": none" << endl;
+
+        for (auto y : perc[x.first]) {
+            if (g_loi == 0) {
+                ret[y.first] += y.second * x.second / 100.0;
+            } else {
+                ret[y.first] += (y.second / (100.0 - perc[x.first]["LOI"]) * 100) * x.second / 100.0;
+            }
+        }
+    }
+    return ret;
+}
+
 void analysis_glaze(string s) {
+    // 分析釉料配方
     if (s.size() == 0)
         return;
     if (s[0] == '#')
@@ -101,7 +122,7 @@ void analysis_glaze(string s) {
     //show_material_percent(g_material_percent, recipe);
 
     // 计算釉料化学组成
-    auto glaze_perc = calc_glaze_percent(g_material_percent, recipe, g_mode);
+    auto glaze_perc = calc_glaze_percent(g_material_percent, g_periodic_table, recipe);
 
     // 从化学组成计算釉式(赛格式)
     auto mol = percent_to_mol(glaze_perc, g_periodic_table);
@@ -109,45 +130,9 @@ void analysis_glaze(string s) {
     auto coef = mol_to_coef(mol, g_mode);
 
     show_glaze_percent({glaze_perc, mw, mol, coef}, {"%", "mw", "mol", "coef"});
-    printf("\n");
+
     show_glaze_formula(coef);
-    //printf("        其它参数 仅供参考 不太准确\n");
+
     CA(mol);
     //K(perc);
-}
-
-map<string, double> calc_glaze_percent(map<string, map<string, double>> p, map<string, double> m, int mode) {
-    // 计算釉料的化学组成
-    map<string, double> ret;
-    for (auto x : m) {
-        if (g_periodic_table.find(x.first) != g_periodic_table.end()) {
-            if (g_loi == 0) {
-                ret[x.first] +=  x.second;
-            }
-            else {
-                ret[x.first] = ret[x.first] + (x.second / (100.0 - m["LOI"]) * 100);
-                printf("%lf %lf %lf\n", x.second, m["LOI"], x.second / (100.0 - m["LOI"]) * 100);
-            }
-            continue;
-        }
-
-        double n = ptable(x.first, g_periodic_table);
-        if (n != 0.0) {
-            g_periodic_table[x.first] = n;
-            ret[x.first] = ret[x.first] + (x.second / (100.0 - m["LOI"]) * 100);
-            continue;
-        }
-
-        if (p.find(x.first) == p.end())
-            cout << "        " << x.first << ": none" << endl;
-
-        for (auto y : p[x.first]) {
-            if (g_loi == 0) {
-                ret[y.first] += y.second * x.second / 100.0;
-            } else {
-                ret[y.first] += (y.second / (100.0 - p[x.first]["LOI"]) * 100) * x.second / 100.0;
-            }
-        }
-    }
-    return ret;
 }
