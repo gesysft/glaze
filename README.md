@@ -1,12 +1,12 @@
 # glaze
 
-## formula, 由配方计算釉式
+## formula 根据釉料配方计算釉式
 ```
-# 计算釉料配方 釉果75, 釉灰25
 $ ./formual 釉果 90 二灰 10
 ```
 
-## 备注
-```
-计算结果仅供参考, 实际烧成效果会出现各种情况
-```
+## books
+[景德镇高温颜色釉]()
+[釉: 料及陶瓷颜色配制手册](https://book.douban.com/subject/26911100/)
+[陶瓷工艺学](https://book.douban.com/subject/5947331/)
+
