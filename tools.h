@@ -11,21 +11,24 @@ enum MODE {
 
 std::vector<std::string> split(const std::string &s, char c = ' ');
 std::vector<std::vector<std::string>> read_form(const char *f);
-std::map<std::string, double> percent_to_mol(std::map<std::string, double> v, std::map<std::string, double> t);
-std::map<std::string, double> mol_to_c(std::map<std::string, double> v, int mode = 1);
-std::map<std::string, double> mol_to_g(std::map<std::string, double> v, std::map<std::string, double> t);
-std::map<std::string, double> g_to_percent(std::map<std::string, double> v);
-
-void show_glaze_percent(std::vector<std::map<std::string, double>> v, std::vector<std::string> s);
-void show_glaze_formula(std::map<std::string, double> v);
 
 std::map<std::string, std::map<std::string, double>> read_material_percent(const char *f);
 std::map<std::string, double> read_periodic_table(const char *f);
+
+std::map<std::string, double> percent_to_mol(std::map<std::string, double> v, std::map<std::string, double> t);
+std::map<std::string, double> mol_to_coef(std::map<std::string, double> v, int mode = 1);
+std::map<std::string, double> mol_to_g(std::map<std::string, double> v, std::map<std::string, double> t);
+std::map<std::string, double> g_to_percent(std::map<std::string, double> v);
+
 std::map<std::string, double> parse_chemical_formula(const std::string &s);
 std::map<std::string, double> get_molecular_weights(std::map<std::string, double> v, std::map<std::string, double> t);
 
-
 double CA(std::map<std::string, double> m);
 double K(std::map<std::string, double> percent);
+
+void show_material_percent(std::map<std::string, std::map<std::string, double>> &material_percent,
+                           std::map<std::string, double> &recipe);
+void show_glaze_percent(std::vector<std::map<std::string, double>> v, std::vector<std::string> s);
+void show_glaze_formula(std::map<std::string, double> v);
 
 #endif

@@ -16,6 +16,7 @@ using namespace std;
 
 // 烧失量
 int g_loi  = 0; 
+
 // 釉料还是泥料
 int g_mode = MODE_GLAZE;
 
@@ -25,10 +26,10 @@ map<string, map<string, double>> g_material_percent;
 
 map<string, string> read_config(const char *f);
 void parse_command(string s);
-map<string, double> get_glaze_percent(map<string, map<string, double>> p, map<string, double> m, int mode);
-void percent_to_formula(map<string, double> perc);
+map<string, double> calc_glaze_percent(map<string, map<string, double>> p, map<string, double> m, int mode);
+void calc_glaze_formula(map<string, double> perc);
 
-void show_material_percent(map<string, double> m);
+void show_material_percent(map<string, map<string, double>> &p, map<string, double> &m);
 
 int main(int argc, char *argv[]) {
     g_config = read_config("./formula.conf");
@@ -67,8 +68,45 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-map<string, double> get_glaze_percent(map<string, map<string, double>> p, map<string, double> m, int mode) {
-    // 总体计算几种原料的化学组成
+map<string, string> read_config(const char *f) {
+    map<string, string> m;
+    m["periodic-table-file"]  = "./data/periodic-table.txt";
+    m["percent-file"] = "./data/jdz-percent.txt";
+
+    vector<vector<string>> form = read_form(f);
+    for (auto x : form) {
+        if (x.size() < 2)
+            continue;
+        m[x[0]] = x[1];
+        //printf("%-24s %s\n", x[0].c_str(), x[1].c_str());
+    }
+    return m;
+}
+
+void parse_command(string s) {
+    if (s.size() == 0)
+        return;
+    if (s[0] == '#')
+        return;
+    vector<string> v = split(s);
+    map<string, double> recipe;
+
+    printf("釉料配方:\n        ");
+    for (int i = 0; i + 1 < v.size(); i += 2) {
+        string material = v[i];
+        double percent = atof(v[i+1].c_str());
+        recipe[material] = percent;
+        printf("%s %g ", material.c_str(), percent);
+    }
+    printf("\n");
+    show_material_percent(g_material_percent, recipe);
+
+    auto glaze_percent = calc_glaze_percent(g_material_percent, recipe, g_mode);
+    calc_glaze_formula(glaze_percent);
+}
+
+map<string, double> calc_glaze_percent(map<string, map<string, double>> p, map<string, double> m, int mode) {
+    // 计算釉料的化学组成
     map<string, double> ret;
     for (auto x : m) {
         if (g_periodic_table.find(x.first) != g_periodic_table.end()) {
@@ -103,86 +141,15 @@ map<string, double> get_glaze_percent(map<string, map<string, double>> p, map<st
     return ret;
 }
 
-void percent_to_formula(map<string, double> perc) {
+void calc_glaze_formula(map<string, double> perc) {
     // 从化学组成计算釉式(赛格式)
     auto mol = percent_to_mol(perc, g_periodic_table);
     auto mw = get_molecular_weights(perc, g_periodic_table);
-    auto c = mol_to_c(mol, g_mode);
-    show_glaze_percent({perc, mw, mol, c}, {"%", "mw", "mol", "c"});
+    auto coef = mol_to_coef(mol, g_mode);
+    show_glaze_percent({perc, mw, mol, coef}, {"%", "mw", "mol", "coef"});
     printf("\n");
-    show_glaze_formula(c);
+    show_glaze_formula(coef);
     //printf("        其它参数 仅供参考 不太准确\n");
     CA(mol);
     //K(perc);
 }
-
-void show_material_percent(map<string, double> m) {
-    set<string> name;
-    for (auto x : m) {
-        if (g_material_percent.find(x.first) != g_material_percent.end()) {
-            for (auto y : g_material_percent[x.first]) {
-                name.insert(y.first);
-            }
-        }
-    }
-    
-    printf("\n化学成分:\n");
-    printf("%-7s ", "");   
-    for (auto x : name) {
-        printf("%-7s ", x.c_str());
-    }
-    printf("\n");
-
-    for (auto x: m) {
-        if (g_material_percent.find(x.first) != g_material_percent.end()) {
-            printf("%-7s ", " ");
-            for (auto y : name) {
-                if (g_material_percent[x.first].find(y) != g_material_percent[x.first].end())  {
-                    printf("%-7.3lf ", g_material_percent[x.first][y]);
-                } else {
-                    printf("%-7s ", "");
-                }
-            }
-            printf("%-7s %lf\n", x.first.c_str(), x.second);
-        }
-    }
-    cout << endl;
-}
-
-map<string, string> read_config(const char *f) {
-    map<string, string> m;
-    m["periodic-table-file"]  = "./data/periodic-table.txt";
-    m["percent-file"] = "./data/jdz-percent.txt";
-
-    vector<vector<string>> form = read_form(f);
-    for (auto x : form) {
-        if (x.size() < 2)
-            continue;
-        m[x[0]] = x[1];
-        //printf("%-24s %s\n", x[0].c_str(), x[1].c_str());
-    }
-    return m;
-}
-
-void parse_command(string s) {
-    if (s.size() == 0)
-        return;
-    if (s[0] == '#')
-        return;
-    vector<string> v = split(s);
-    map<string, double> m;
-    printf("配方:\n");
-    cout << "        ";
-    for (int i = 1; i < v.size(); i += 2) {
-        m[v[i-1]] = atof(v[i].c_str());
-        cout << v[i-1] << " " << m[v[i-1]] << " ";
-    }
-    cout << endl;
-    //show_material_percent(m);
-
-    map<string, double> percent = get_glaze_percent(g_material_percent, m, g_mode);
-    percent_to_formula(percent);
-}
-
-
-

@@ -100,7 +100,7 @@ map<string, double> mol_to_g(map<string, double> v, map<string, double> t) {
     return v2;
 }
 
-map<string, double> mol_to_c(map<string, double> v, int mode) {
+map<string, double> mol_to_coef(map<string, double> v, int mode) {
     // 摩尔量 -> 摩尔系数
     // mode = 0, 计算碱性氧化物的总数, 坯料
     // mode = 1, 计算中性氧化物的总数, 釉料
@@ -120,94 +120,6 @@ map<string, double> mol_to_c(map<string, double> v, int mode) {
         v2[x.first] = x.second / total;
     }
     return v2;
-}
-
-void show_glaze_percent(vector<map<string, double>> v, vector<string> s) {
-    printf("化学组成:\n");
-    printf("%-7s ", "");   
-    for (auto x : v[0]) {
-        printf("%-7s ", x.first.c_str());
-    }
-    printf("TOTAL\n");
-
-    double total = 0.0;
-    for (int i = 0; i < v.size(); ++i) {
-        total = 0.0;
-        printf("%-7s ", s[i].c_str());
-        for (auto x : v[i]) {
-            printf("%-7.3lf ", x.second);
-            total += x.second;
-        }
-        printf("%-7.3lf\n", total);
-    }
-}
-
-void show_glaze_formula(map<string, double> v) {
-    // 助熔剂 K2O Na2O Li2O BaO CaO MgO SrO PbO ZnO B2O3
-    // 玻化剂 SiO2 B2O3 P2O5
-    // 稳定剂 Al2O3
-    // 乳浊剂 SnO2 TiO2 ZrO2
-    // 着色剂 Fe2O3
-    printf("釉式:\n");
-    map<string, double> c;
-    for (auto x : v) {
-        c[x.first] = x.second;
-    }
-
-    vector<pair<string, double>> v1;
-    vector<pair<string, double>> v2;
-    vector<pair<string, double>> v3;
-    vector<pair<string, double>> v4;
-
-    // 碱性
-    vector<string> s1 = {"K2O", "Na2O", "Li2O", "BaO", "CaO", "MgO", "PbO", "SrO", "ZnO"};
-    for (auto x : s1) {
-        if (c.find(x) != c.end())
-            v1.push_back({x, c[x]});
-    }
-
-    // 中性
-    vector<string> s2 = {"Al2O3", "Fe2O3"};
-    for (auto x : s2) {
-        if (c.find(x) != c.end())
-            v2.push_back({x, c[x]});
-    }
-
-    // 酸性
-    vector<string> s3 = {"SiO2", "B2O3", "SnO2", "TiO2", "ZrO2", "P2O5"};
-    for (auto x : s3) {
-        if (c.find(x) != c.end()) {
-            v3.push_back({x, c[x]});
-        }
-    }
-
-    // 其它
-    vector<string> s4 = {"CuO"};
-    for (auto x : s4) {
-        if (c.find(x) != c.end())
-            v4.push_back({x, c[x]});
-    }
-
-    for (int i = 0; i < v1.size() || i < v2.size() || i < v3.size() || i < v4.size(); ++i) {
-        if (i < v1.size())
-            printf("%-7s %-7.4f %-7s", " ", v1[i].second, v1[i].first.c_str());
-        else
-            printf("%-23s", " ");
-
-        if (i < v2.size())
-            printf("| %-7.4f %-7s", v2[i].second, v2[i].first.c_str());
-        else
-            printf("| %-15s", " ");
-
-        if (i < v3.size())
-            printf("| %-7.4f %-7s", v3[i].second, v3[i].first.c_str());
-        else
-            printf("| %-15s", " ");
-
-        if (i < v4.size())
-            printf("| %-7.4f %-7s", v4[i].second, v4[i].first.c_str());
-        printf("\n");
-    }
 }
 
 map<string, double> percent_to_mol(map<string, double> v, map<string, double> t) {
@@ -319,3 +231,126 @@ double K(map<string, double> percent) {
     printf("        熔融温度   K = %lf 烧成温度 %s (%lf)\n", k, temp.c_str(), t);
     return k;
 }
+
+void show_material_percent(map<string, map<string, double>> &material_percent, map<string, double> &recipe) {
+    set<string> name;
+    for (auto x : recipe) {
+        if (material_percent.find(x.first) != material_percent.end()) {
+            for (auto y : material_percent[x.first]) {
+                name.insert(y.first);
+            }
+        }
+    }
+    
+    printf("原料化学成分:\n");
+    printf("%-7s ", "");   
+    for (auto x : name) {
+        printf("%-7s ", x.c_str());
+    }
+    printf("\n");
+
+    for (auto x: recipe) {
+        if (material_percent.find(x.first) != material_percent.end()) {
+            printf("%-7s ", " ");
+            for (auto y : name) {
+                if (material_percent[x.first].find(y) != material_percent[x.first].end())  {
+                    printf("%-7.3lf ", material_percent[x.first][y]);
+                } else {
+                    printf("%-7s ", "");
+                }
+            }
+            printf("%-7s %g\n", x.first.c_str(), x.second);
+        }
+    }
+    printf("\n");
+}
+
+void show_glaze_percent(vector<map<string, double>> v, vector<string> s) {
+    printf("釉料化学组成:\n");
+    printf("%-7s ", "");   
+    for (auto x : v[0]) {
+        printf("%-7s ", x.first.c_str());
+    }
+    printf("TOTAL\n");
+
+    double total = 0.0;
+    for (int i = 0; i < v.size(); ++i) {
+        total = 0.0;
+        printf("%-7s ", s[i].c_str());
+        for (auto x : v[i]) {
+            printf("%-7.3lf ", x.second);
+            total += x.second;
+        }
+        printf("%-7.3lf\n", total);
+    }
+}
+
+void show_glaze_formula(map<string, double> v) {
+    // 助熔剂 K2O Na2O Li2O BaO CaO MgO SrO PbO ZnO B2O3
+    // 玻化剂 SiO2 B2O3 P2O5
+    // 稳定剂 Al2O3
+    // 乳浊剂 SnO2 TiO2 ZrO2
+    // 着色剂 Fe2O3
+    printf("釉式:\n");
+    map<string, double> c;
+    for (auto x : v) {
+        c[x.first] = x.second;
+    }
+
+    vector<pair<string, double>> v1;
+    vector<pair<string, double>> v2;
+    vector<pair<string, double>> v3;
+    vector<pair<string, double>> v4;
+
+    // 碱性
+    vector<string> s1 = {"K2O", "Na2O", "Li2O", "BaO", "CaO", "MgO", "PbO", "SrO", "ZnO"};
+    for (auto x : s1) {
+        if (c.find(x) != c.end())
+            v1.push_back({x, c[x]});
+    }
+
+    // 中性
+    vector<string> s2 = {"Al2O3", "Fe2O3"};
+    for (auto x : s2) {
+        if (c.find(x) != c.end())
+            v2.push_back({x, c[x]});
+    }
+
+    // 酸性
+    vector<string> s3 = {"SiO2", "B2O3", "SnO2", "TiO2", "ZrO2", "P2O5"};
+    for (auto x : s3) {
+        if (c.find(x) != c.end()) {
+            v3.push_back({x, c[x]});
+        }
+    }
+
+    // 其它
+    vector<string> s4 = {"CuO"};
+    for (auto x : s4) {
+        if (c.find(x) != c.end())
+            v4.push_back({x, c[x]});
+    }
+
+    for (int i = 0; i < v1.size() || i < v2.size() || i < v3.size() || i < v4.size(); ++i) {
+        if (i < v1.size())
+            printf("%-7s %-7.4f %-7s", " ", v1[i].second, v1[i].first.c_str());
+        else
+            printf("%-23s", " ");
+
+        if (i < v2.size())
+            printf("| %-7.4f %-7s", v2[i].second, v2[i].first.c_str());
+        else
+            printf("| %-15s", " ");
+
+        if (i < v3.size())
+            printf("| %-7.4f %-7s", v3[i].second, v3[i].first.c_str());
+        else
+            printf("| %-15s", " ");
+
+        if (i < v4.size())
+            printf("| %-7.4f %-7s", v4[i].second, v4[i].first.c_str());
+        printf("\n");
+    }
+}
+
+
