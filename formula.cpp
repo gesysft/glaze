@@ -29,8 +29,6 @@ void parse_command(string s);
 map<string, double> calc_glaze_percent(map<string, map<string, double>> p, map<string, double> m, int mode);
 void calc_glaze_formula(map<string, double> perc);
 
-void show_material_percent(map<string, map<string, double>> &p, map<string, double> &m);
-
 int main(int argc, char *argv[]) {
     g_config = read_config("./formula.conf");
     g_periodic_table  = read_periodic_table(g_config["periodic-table-file"].c_str());
