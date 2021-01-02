@@ -6,7 +6,8 @@ $ ./formual 釉果 90 二灰 10
 ```
 
 ## books
-[景德镇高温颜色釉]()
+```
 [釉: 料及陶瓷颜色配制手册](https://book.douban.com/subject/26911100/)
 [陶瓷工艺学](https://book.douban.com/subject/5947331/)
+```
 
