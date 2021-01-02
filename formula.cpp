@@ -20,7 +20,6 @@ int g_loi  = 0;
 // 釉料还是泥料
 int g_mode = MODE_GLAZE;
 
-map<string, string> g_config;
 map<string, double> g_periodic_table;
 map<string, map<string, double>> g_material_percent;
 
@@ -33,9 +32,9 @@ int main(int argc, char *argv[]) {
         return 0;
     }
     
-    g_config = read_config("./formula.conf");
-    g_periodic_table  = read_periodic_table(g_config["periodic-table-file"].c_str());
-    g_material_percent = read_material_percent(g_config["percent-file"].c_str());
+    auto config = read_config("./formula.conf");
+    g_periodic_table  = read_periodic_table(config["periodic-table-file"].c_str());
+    g_material_percent = read_material_percent(config["percent-file"].c_str());
 
     string s;
     for (int i = 1; i < argc; ++i) {
