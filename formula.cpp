@@ -25,11 +25,15 @@ map<string, double> g_periodic_table;
 map<string, map<string, double>> g_material_percent;
 
 map<string, string> read_config(const char *f);
-void parse_command(string s);
+void analysis_glaze(string recipe);
 map<string, double> calc_glaze_percent(map<string, map<string, double>> p, map<string, double> m, int mode);
-void calc_glaze_formula(map<string, double> perc);
 
 int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        printf("usage: ./formula 釉果 90 二灰 10\n");
+        return 0;
+    }
+    
     g_config = read_config("./formula.conf");
     g_periodic_table  = read_periodic_table(g_config["periodic-table-file"].c_str());
     g_material_percent = read_material_percent(g_config["percent-file"].c_str());
@@ -51,18 +55,14 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    if (argc > 1) {
-        string s;
-        for (int i = 1; i < argc; ++i) {
-            if (argv[i][0] == '-')
-                continue;
-            s = s + " " + argv[i];
+    string s;
+    for (int i = 1; i < argc; ++i) {
+        if (argv[i][0] != '-') {
+            s.append(argv[i]);
+            s.append(" ");
         }
-        s += " 100";
-        parse_command(s);
-        return 0;
     }
-
+    analysis_glaze(s + " 100");
     return 0;
 }
 
@@ -81,7 +81,7 @@ map<string, string> read_config(const char *f) {
     return m;
 }
 
-void parse_command(string s) {
+void analysis_glaze(string s) {
     if (s.size() == 0)
         return;
     if (s[0] == '#')
@@ -97,10 +97,23 @@ void parse_command(string s) {
         printf("%s %g ", material.c_str(), percent);
     }
     printf("\n");
-    show_material_percent(g_material_percent, recipe);
 
-    auto glaze_percent = calc_glaze_percent(g_material_percent, recipe, g_mode);
-    calc_glaze_formula(glaze_percent);
+    //show_material_percent(g_material_percent, recipe);
+
+    // 计算釉料化学组成
+    auto glaze_perc = calc_glaze_percent(g_material_percent, recipe, g_mode);
+
+    // 从化学组成计算釉式(赛格式)
+    auto mol = percent_to_mol(glaze_perc, g_periodic_table);
+    auto mw = get_molecular_weights(glaze_perc, g_periodic_table);
+    auto coef = mol_to_coef(mol, g_mode);
+
+    show_glaze_percent({glaze_perc, mw, mol, coef}, {"%", "mw", "mol", "coef"});
+    printf("\n");
+    show_glaze_formula(coef);
+    //printf("        其它参数 仅供参考 不太准确\n");
+    CA(mol);
+    //K(perc);
 }
 
 map<string, double> calc_glaze_percent(map<string, map<string, double>> p, map<string, double> m, int mode) {
@@ -137,17 +150,4 @@ map<string, double> calc_glaze_percent(map<string, map<string, double>> p, map<s
         }
     }
     return ret;
-}
-
-void calc_glaze_formula(map<string, double> perc) {
-    // 从化学组成计算釉式(赛格式)
-    auto mol = percent_to_mol(perc, g_periodic_table);
-    auto mw = get_molecular_weights(perc, g_periodic_table);
-    auto coef = mol_to_coef(mol, g_mode);
-    show_glaze_percent({perc, mw, mol, coef}, {"%", "mw", "mol", "coef"});
-    printf("\n");
-    show_glaze_formula(coef);
-    //printf("        其它参数 仅供参考 不太准确\n");
-    CA(mol);
-    //K(perc);
 }
