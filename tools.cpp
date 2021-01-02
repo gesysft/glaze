@@ -9,7 +9,7 @@
 
 using namespace std;
 
-map<string, map<string, double>> read_percent(const char *f) {
+map<string, map<string, double>> read_material_percent(const char *f) {
     // 读取原料化学成分表
     map<string, map<string, double>> percent;
     vector<vector<string>> form = read_form(f);
@@ -122,12 +122,33 @@ map<string, double> mol_to_c(map<string, double> v, int mode) {
     return v2;
 }
 
-void show_formula(map<string, double> v) {
+void show_glaze_percent(vector<map<string, double>> v, vector<string> s) {
+    printf("化学组成:\n");
+    printf("%-7s ", "");   
+    for (auto x : v[0]) {
+        printf("%-7s ", x.first.c_str());
+    }
+    printf("TOTAL\n");
+
+    double total = 0.0;
+    for (int i = 0; i < v.size(); ++i) {
+        total = 0.0;
+        printf("%-7s ", s[i].c_str());
+        for (auto x : v[i]) {
+            printf("%-7.3lf ", x.second);
+            total += x.second;
+        }
+        printf("%-7.3lf\n", total);
+    }
+}
+
+void show_glaze_formula(map<string, double> v) {
     // 助熔剂 K2O Na2O Li2O BaO CaO MgO SrO PbO ZnO B2O3
     // 玻化剂 SiO2 B2O3 P2O5
     // 稳定剂 Al2O3
     // 乳浊剂 SnO2 TiO2 ZrO2
     // 着色剂 Fe2O3
+    printf("釉式:\n");
     map<string, double> c;
     for (auto x : v) {
         c[x.first] = x.second;
@@ -189,7 +210,6 @@ void show_formula(map<string, double> v) {
     }
 }
 
-
 map<string, double> percent_to_mol(map<string, double> v, map<string, double> t) {
     // 百分比 -> 摩尔量
     map<string, double> v2;
@@ -198,6 +218,7 @@ map<string, double> percent_to_mol(map<string, double> v, map<string, double> t)
     }
     return v2;
 }
+
 map<string, double> get_molecular_weights(map<string, double> v, map<string, double> t) {
     // 获取摩尔质量
     map<string, double> v2;
@@ -205,25 +226,6 @@ map<string, double> get_molecular_weights(map<string, double> v, map<string, dou
         v2[x.first] = t[x.first];
     }
     return v2;
-}
-
-void show(vector<map<string, double>> v, vector<string> s) {
-    printf("%-7s ", "");   
-    for (auto x : v[0]) {
-        printf("%-7s ", x.first.c_str());
-    }
-    printf("TOTAL\n");
-
-    double total = 0.0;
-    for (int i = 0; i < v.size(); ++i) {
-        total = 0.0;
-        printf("%-7s ", s[i].c_str());
-        for (auto x : v[i]) {
-            printf("%-7.3lf ", x.second);
-            total += x.second;
-        }
-        printf("%-7.3lf\n", total);
-    }
 }
 
 double CA(map<string, double> m) {
@@ -317,5 +319,3 @@ double K(map<string, double> percent) {
     printf("        熔融温度   K = %lf 烧成温度 %s (%lf)\n", k, temp.c_str(), t);
     return k;
 }
-
-

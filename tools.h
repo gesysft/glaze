@@ -15,9 +15,11 @@ std::map<std::string, double> percent_to_mol(std::map<std::string, double> v, st
 std::map<std::string, double> mol_to_c(std::map<std::string, double> v, int mode = 1);
 std::map<std::string, double> mol_to_g(std::map<std::string, double> v, std::map<std::string, double> t);
 std::map<std::string, double> g_to_percent(std::map<std::string, double> v);
-void show(std::vector<std::map<std::string, double>> v, std::vector<std::string> s);
-void show_formula(std::map<std::string, double> v);
-std::map<std::string, std::map<std::string, double>> read_percent(const char *f);
+
+void show_glaze_percent(std::vector<std::map<std::string, double>> v, std::vector<std::string> s);
+void show_glaze_formula(std::map<std::string, double> v);
+
+std::map<std::string, std::map<std::string, double>> read_material_percent(const char *f);
 std::map<std::string, double> read_periodic_table(const char *f);
 std::map<std::string, double> parse_chemical_formula(const std::string &s);
 std::map<std::string, double> get_molecular_weights(std::map<std::string, double> v, std::map<std::string, double> t);

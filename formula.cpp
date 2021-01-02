@@ -21,18 +21,19 @@ int g_mode = MODE_GLAZE;
 
 map<string, string> g_config;
 map<string, double> g_periodic_table;
-map<string, map<string, double>> g_percent;
+map<string, map<string, double>> g_material_percent;
 
 map<string, string> read_config(const char *f);
-map<string, double> get_percent(map<string, map<string, double>> p, map<string, double> m, int mode);
-void show_percent(map<string, double> m);
-void percent_to_formula(map<string, double> perc);
 void parse_command(string s);
+map<string, double> get_glaze_percent(map<string, map<string, double>> p, map<string, double> m, int mode);
+void percent_to_formula(map<string, double> perc);
+
+void show_material_percent(map<string, double> m);
 
 int main(int argc, char *argv[]) {
     g_config = read_config("./formula.conf");
     g_periodic_table  = read_periodic_table(g_config["periodic-table-file"].c_str());
-    g_percent = read_percent(g_config["percent-file"].c_str());
+    g_material_percent = read_material_percent(g_config["percent-file"].c_str());
 
     int c;
     while ((c = getopt(argc, argv, "bglp")) != EOF) {
@@ -66,7 +67,7 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
-map<string, double> get_percent(map<string, map<string, double>> p, map<string, double> m, int mode) {
+map<string, double> get_glaze_percent(map<string, map<string, double>> p, map<string, double> m, int mode) {
     // 总体计算几种原料的化学组成
     map<string, double> ret;
     for (auto x : m) {
@@ -107,24 +108,25 @@ void percent_to_formula(map<string, double> perc) {
     auto mol = percent_to_mol(perc, g_periodic_table);
     auto mw = get_molecular_weights(perc, g_periodic_table);
     auto c = mol_to_c(mol, g_mode);
-    show({perc, mw, mol, c}, {"%", "mw", "mol", "c"});
+    show_glaze_percent({perc, mw, mol, c}, {"%", "mw", "mol", "c"});
     printf("\n");
-    show_formula(c);
+    show_glaze_formula(c);
     //printf("        其它参数 仅供参考 不太准确\n");
     CA(mol);
     //K(perc);
 }
 
-void show_percent(map<string, double> m) {
+void show_material_percent(map<string, double> m) {
     set<string> name;
     for (auto x : m) {
-        if (g_percent.find(x.first) != g_percent.end()) {
-            for (auto y : g_percent[x.first]) {
+        if (g_material_percent.find(x.first) != g_material_percent.end()) {
+            for (auto y : g_material_percent[x.first]) {
                 name.insert(y.first);
             }
         }
     }
-
+    
+    printf("\n化学成分:\n");
     printf("%-7s ", "");   
     for (auto x : name) {
         printf("%-7s ", x.c_str());
@@ -132,11 +134,11 @@ void show_percent(map<string, double> m) {
     printf("\n");
 
     for (auto x: m) {
-        if (g_percent.find(x.first) != g_percent.end()) {
+        if (g_material_percent.find(x.first) != g_material_percent.end()) {
             printf("%-7s ", " ");
             for (auto y : name) {
-                if (g_percent[x.first].find(y) != g_percent[x.first].end())  {
-                    printf("%-7.3lf ", g_percent[x.first][y]);
+                if (g_material_percent[x.first].find(y) != g_material_percent[x.first].end())  {
+                    printf("%-7.3lf ", g_material_percent[x.first][y]);
                 } else {
                     printf("%-7s ", "");
                 }
@@ -145,24 +147,6 @@ void show_percent(map<string, double> m) {
         }
     }
     cout << endl;
-}
-
-void parse_command(string s) {
-    if (s.size() == 0)
-        return;
-    if (s[0] == '#')
-        return;
-    vector<string> v = split(s);
-    map<string, double> m;
-    cout << "        ";
-    for (int i = 1; i < v.size(); i += 2) {
-        m[v[i-1]] = atof(v[i].c_str());
-        cout << v[i-1] << " " << m[v[i-1]] << " ";
-    }
-    cout << endl;
-    map<string, double> percent = get_percent(g_percent, m, g_mode);
-    show_percent(m);
-    percent_to_formula(percent);
 }
 
 map<string, string> read_config(const char *f) {
@@ -179,5 +163,26 @@ map<string, string> read_config(const char *f) {
     }
     return m;
 }
+
+void parse_command(string s) {
+    if (s.size() == 0)
+        return;
+    if (s[0] == '#')
+        return;
+    vector<string> v = split(s);
+    map<string, double> m;
+    printf("配方:\n");
+    cout << "        ";
+    for (int i = 1; i < v.size(); i += 2) {
+        m[v[i-1]] = atof(v[i].c_str());
+        cout << v[i-1] << " " << m[v[i-1]] << " ";
+    }
+    cout << endl;
+    //show_material_percent(m);
+
+    map<string, double> percent = get_glaze_percent(g_material_percent, m, g_mode);
+    percent_to_formula(percent);
+}
+
 
 
