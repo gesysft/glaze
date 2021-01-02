@@ -14,8 +14,8 @@
 
 using namespace std;
 
-// 是否计算烧失量
-int g_loi  = 0; 
+// 烧失量
+int g_loi = 0; 
 
 // 釉料还是泥料
 int g_mode = MODE_GLAZE;
