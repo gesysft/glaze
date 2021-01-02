@@ -80,6 +80,7 @@ int main(int argc, char *argv[]) {
 }
 
 map<string, double> get_percent(map<string, map<string, double>> p, map<string, double> m, int mode) {
+    // 总体计算几种原料的化学组成
     map<string, double> ret;
     for (auto x : m) {
         if (g_periodic_table.find(x.first) != g_periodic_table.end()) {
@@ -114,8 +115,8 @@ map<string, double> get_percent(map<string, map<string, double>> p, map<string, 
     return ret;
 }
 
-// 从化学组成计算釉式(赛格式)
 void percent_to_formula(map<string, double> perc) {
+    // 从化学组成计算釉式(赛格式)
     auto mol = percent_to_mol(perc, g_periodic_table);
     auto mw = get_molecular_weights(perc, g_periodic_table);
     auto c = mol_to_c(mol, g_mode);
