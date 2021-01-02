@@ -16,8 +16,8 @@ using namespace std;
 
 // 烧失量
 int g_loi  = 0; 
+// 釉料还是泥料
 int g_mode = MODE_GLAZE;
-int g_ptable = 0;
 
 map<string, string> g_config;
 map<string, double> g_periodic_table;
@@ -46,22 +46,9 @@ int main(int argc, char *argv[]) {
             case 'l':
                 g_loi = 1;
                 break;
-            case 'p':
-                g_ptable = 1;
             default:
                 break;
         }
-    }
-
-    if (g_ptable == 1) {
-        // 计算分子的摩尔质量
-        for (int i = 1; i < argc; ++i) {
-            if (argv[i][0] != '-') {
-                double n = ptable(argv[i], g_periodic_table);
-                printf("%s %.3lf\n", argv[i], n);
-            }
-        }
-        return 0;
     }
 
     if (argc > 1) {
@@ -124,7 +111,7 @@ void percent_to_formula(map<string, double> perc) {
     printf("\n");
     show_formula(c);
     //printf("        其它参数 仅供参考 不太准确\n");
-    //CA(mol);
+    CA(mol);
     //K(perc);
 }
 
