@@ -243,7 +243,7 @@ void show_material_percent(map<string, map<string, double>> &material_percent, m
         }
     }
     
-    printf("原料化学成分:\n");
+    printf("\n原料化学成分:\n");
     printf("%-7s ", "");   
     for (auto x : name) {
         printf("%-7s ", x.c_str());
@@ -263,7 +263,6 @@ void show_material_percent(map<string, map<string, double>> &material_percent, m
             printf("%-7s %g\n", x.first.c_str(), x.second);
         }
     }
-    printf("\n");
 }
 
 void show_glaze_percent(vector<map<string, double>> v, vector<string> s) {

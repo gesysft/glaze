@@ -1,6 +1,9 @@
 /*
     由配方计算釉式   
+
+    备注: 计算结果仅供参考, 实际烧成效果受诸多因素影响
 */
+
 #include <stdio.h>
 #include <vector>
 #include <map>
@@ -118,7 +121,7 @@ void analysis_glaze(string s) {
     }
     printf("\n");
 
-    show_material_percent(g_material_percent, recipe);
+    //show_material_percent(g_material_percent, recipe);
 
     // 计算釉料化学组成
     auto glaze_perc = calc_glaze_percent(g_material_percent, g_periodic_table, recipe);

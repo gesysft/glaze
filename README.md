@@ -1,5 +1,8 @@
 # glaze
 
+## bilibili
+[glaze](https://www.bilibili.com/video/BV1L5411p7ak)
+
 ## glaze formula
 ```
 $ ./formual 釉果 90 二灰 10
@@ -13,6 +16,11 @@ $ ./formual 釉果 90 二灰 10
 3. [陶瓷釉色料及装饰](https://book.douban.com/subject/30466477/)
 
 4. [陶瓷工艺学](https://book.douban.com/subject/5947331/)
+
+5. [The Complete Guide to High-Fire Glazes](https://book.douban.com/subject/2694637/)
+
+## 实习基地
+1. [景德镇乐天陶社](http://www.potteryworkshop.com.cn/cn/index.asp)
 
 
 
