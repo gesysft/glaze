@@ -118,7 +118,7 @@ void analysis_glaze(string s) {
     }
     printf("\n");
 
-    //show_material_percent(g_material_percent, recipe);
+    show_material_percent(g_material_percent, recipe);
 
     // 计算釉料化学组成
     auto glaze_perc = calc_glaze_percent(g_material_percent, g_periodic_table, recipe);
