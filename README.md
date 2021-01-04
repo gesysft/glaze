@@ -5,7 +5,7 @@
 
 ## glaze formula
 ```
-$ ./formual 釉果 90 二灰 10
+$ ./formula 釉果 90 二灰 10
 ```
 
 ## books
