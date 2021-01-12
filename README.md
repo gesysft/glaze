@@ -19,7 +19,7 @@ $ ./formula 釉果 90 二灰 10
 
 5. [The Complete Guide to High-Fire Glazes](https://book.douban.com/subject/2694637/)
 
-## 实习基地
+## pottery workshop
 1. [景德镇乐天陶社](http://www.potteryworkshop.com.cn/cn/index.asp)
 
 
